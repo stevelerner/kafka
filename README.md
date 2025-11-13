@@ -7,6 +7,16 @@ A comprehensive demonstration of Apache Kafka streaming concepts featuring multi
 ![Kafka](https://img.shields.io/badge/kafka-3.6-orange)
 ![Python](https://img.shields.io/badge/python-3.11-green)
 
+## Getting Started in 3 Commands
+
+```bash
+cd /Volumes/external/code/kafka
+./start.sh                    # Starts everything (2-3 min first time)
+open http://localhost:8080    # Opens web UI
+```
+
+When you're done: `./cleanup.sh`
+
 ## Overview
 
 This project demonstrates:
@@ -103,65 +113,134 @@ The platform consists of 7 containerized services:
 
 ### Prerequisites
 
-- **Docker Desktop for Mac** (running)
-- **curl** (for testing scripts)
-- **jq** (optional, for pretty JSON output)
+- **Docker Desktop for Mac** (running) - Required
+- **curl** (for testing) - Usually pre-installed on macOS
+- **jq** (optional) - For pretty JSON output: `brew install jq`
 
-### Start the Platform
+### Three Steps to Get Started
 
 ```bash
-# Make scripts executable
-chmod +x *.sh
+# Navigate to the kafka directory
+cd /Volumes/external/code/kafka
 
-# Start all services
+# 1. Start everything
 ./start.sh
 
-# Check status
-./status.sh
+# 2. Open the Web UI
+open http://localhost:8080
 
-# Stop services
-./stop.sh
-
-# Clean up everything
+# 3. When done, clean up
 ./cleanup.sh
 ```
 
-The startup script will:
-1. Check Docker is running
-2. Build all containers
-3. Start Zookeeper
-4. Start Kafka broker
-5. Create topics
-6. Start producers and consumers
-7. Launch web UI
-8. Display access URLs
+### Management Scripts
 
-### Access the Demo
+The platform includes shell scripts for easy management:
 
-Once started, access:
+| Script | Purpose | When to Use |
+|--------|---------|-------------|
+| `./start.sh` | Start everything | First time or after cleanup |
+| `./stop.sh` | Stop services | Pause without losing data |
+| `./cleanup.sh` | Remove everything | When done or need fresh start |
+| `./status.sh` | Check status | Verify services are running |
+| `./demo.sh` | Interactive demo | Learn Kafka concepts |
 
-- **Web UI**: http://localhost:8080
-- **Kafka Broker**: localhost:9092 (internal)
-- **Schema Registry**: http://localhost:8081
-- **Zookeeper**: localhost:2181 (internal)
+**For complete script documentation, see [SCRIPTS.md](SCRIPTS.md)**
 
-### Run Demos
+#### Core Scripts
+
+**`./start.sh`** - Start the platform
+- Checks Docker is running and ports are available
+- Builds Docker images (2-3 min first time, cached after)
+- Starts Zookeeper, Kafka broker, Schema Registry
+- Creates topics automatically
+- Starts producers and consumers
+- Launches web UI
+- Performs health checks
+- Displays access URLs
+- **Subsequent starts take ~30 seconds**
+
+**`./stop.sh`** - Stop all services
+- Gracefully stops all containers
+- Keeps containers for fast restart
+- Use when you want to pause without losing data
+
+**`./cleanup.sh`** - Complete cleanup
+- Stops and removes all containers
+- Removes all volumes (data deleted)
+- Removes networks
+- Removes custom images
+- Keeps base Confluent images
+- **Use when you're done or need a fresh start**
+
+**`./status.sh`** - Check platform status
+- Shows container status
+- Lists Kafka topics
+- Shows consumer groups
+- Checks web UI health
+
+#### Demo Scripts
+
+**`./demo.sh`** - Interactive demo
+- Showcases all Kafka concepts step-by-step
+- Explains topics, partitions, producers, consumers
+- Demonstrates message ordering and throughput
+
+**`./demo-events.sh`** - Event-driven architecture
+- User events (clicks, purchases, signups)
+- Real-time analytics processing
+
+**`./demo-logs.sh`** - Log aggregation
+- Centralized logging from multiple services
+- Error monitoring and alerting
+
+**`./demo-metrics.sh`** - Metrics collection
+- System metrics streaming
+- Anomaly detection
+
+**`./demo-consumer-groups.sh`** - Consumer groups
+- Load balancing demonstration
+- Partition assignment
+- Consumer scaling
+
+### Access the Platform
+
+Once `./start.sh` completes, access:
+
+- **Web UI**: http://localhost:8080 (Main dashboard with real-time visualization)
+- **Schema Registry**: http://localhost:8081 (Schema management API)
+- **Kafka Broker**: localhost:9092 (For client connections)
+
+### Common Operations
 
 ```bash
-# Run all demos
-./demo.sh
+# Check everything is running
+./status.sh
 
-# Test specific patterns
-./demo-events.sh       # Event-driven pattern
-./demo-logs.sh         # Log aggregation
-./demo-metrics.sh      # Time-series data
-./demo-consumer-groups.sh  # Consumer groups
-
-# View logs
+# View all logs
 docker-compose logs -f
 
-# Check Kafka topics
+# View specific service logs
+docker-compose logs -f kafka
+docker-compose logs -f event-producer
+docker-compose logs -f analytics-consumer
+docker-compose logs -f web-ui
+
+# List Kafka topics
 docker-compose exec kafka kafka-topics --list --bootstrap-server localhost:9092
+
+# Run interactive demo
+./demo.sh
+
+# Stop services (keeps data)
+./stop.sh
+
+# Restart quickly
+docker-compose start
+
+# Full cleanup and start fresh
+./cleanup.sh
+./start.sh
 ```
 
 ## Kafka Concepts Demonstrated
@@ -656,11 +735,43 @@ docker-compose logs kafka
 # Verify Zookeeper is running
 docker-compose ps zookeeper
 
-# Check port availability
+# Check port availability (macOS)
 lsof -i :9092
+lsof -i :8080
 
 # Clean restart
 ./cleanup.sh
+./start.sh
+```
+
+### Ports already in use
+
+If you see "Port already in use" errors:
+
+```bash
+# Find what's using the port
+lsof -i :8080
+lsof -i :9092
+
+# Kill the process
+kill -9 <PID>
+
+# Or stop Docker containers
+docker stop $(docker ps -q)
+
+# Then start fresh
+./start.sh
+```
+
+### Script permission denied
+
+If you get "Permission denied" when running scripts:
+
+```bash
+# Make scripts executable
+chmod +x *.sh
+
+# Then run again
 ./start.sh
 ```
 
@@ -850,7 +961,43 @@ This project serves as a technical reference implementation demonstrating:
 
 ---
 
-**Note**: This demo uses a single Kafka broker for simplicity. Production deployments should use multiple brokers for high availability and fault tolerance.
+## Getting Help
 
-Ready to explore Kafka? Run `./start.sh` and open http://localhost:8080!
+### Quick Reference
+
+```bash
+./start.sh              # Start everything
+./status.sh             # Check status
+./demo.sh               # Run interactive demo
+./stop.sh               # Stop services
+./cleanup.sh            # Complete cleanup
+```
+
+### Common Issues
+
+1. **Docker not running**: Start Docker Desktop
+2. **Ports in use**: Run `./cleanup.sh` then `./start.sh`
+3. **Build errors**: Run `./cleanup.sh` to remove cached images
+4. **Slow startup**: First build takes 2-3 minutes, be patient
+5. **Permission denied**: Run `chmod +x *.sh`
+
+### Documentation
+
+- **README.md** (this file) - Overview and quick start
+- **SCRIPTS.md** - Complete script reference and workflows
+- **docs/ARCHITECTURE.md** - Detailed architecture guide
+- **docs/KAFKA-CONCEPTS.md** - Comprehensive Kafka tutorial
+- **docs/QUICK-REFERENCE.md** - Command cheat sheet
+
+---
+
+**Note**: This demo uses a single Kafka broker for simplicity and ease of running on Docker Desktop for Mac. Production deployments should use multiple brokers (3+) for high availability and fault tolerance.
+
+**Ready to explore Kafka?**
+
+```bash
+cd /Volumes/external/code/kafka
+./start.sh
+open http://localhost:8080
+```
 
