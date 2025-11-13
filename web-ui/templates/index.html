@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kafka Streaming Platform - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kafka Streaming Platform</h1>
+            <p class="subtitle">Real-time Message Visualization & Monitoring</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-label">Total Messages</div>
+                <div class="stat-value" id="total-messages">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Topics</div>
+                <div class="stat-value" id="total-topics">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Last Update</div>
+                <div class="stat-value" id="last-update">Never</div>
+            </div>
+            <div class="stat-card status-card">
+                <div class="stat-label">Status</div>
+                <div class="stat-value">
+                    <span class="status-indicator" id="status-indicator">●</span>
+                    <span id="status-text">Connected</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="topics">Topics Overview</button>
+            <button class="tab-button" data-tab="messages">Live Messages</button>
+            <button class="tab-button" data-tab="events">Event Stream</button>
+            <button class="tab-button" data-tab="logs">Application Logs</button>
+            <button class="tab-button" data-tab="metrics">System Metrics</button>
+        </div>
+
+        <div id="topics" class="tab-content active">
+            <h2>Topics Overview</h2>
+            <div id="topics-grid" class="topics-grid">
+                <div class="loading">Loading topics...</div>
+            </div>
+        </div>
+
+        <div id="messages" class="tab-content">
+            <h2>Live Messages</h2>
+            <div class="controls">
+                <label>
+                    Topic:
+                    <select id="topic-select">
+                        <option value="user-events">User Events</option>
+                        <option value="application-logs">Application Logs</option>
+                        <option value="system-metrics">System Metrics</option>
+                    </select>
+                </label>
+                <label>
+                    <input type="checkbox" id="auto-refresh" checked>
+                    Auto-refresh (2s)
+                </label>
+                <button id="refresh-btn" class="btn">Refresh Now</button>
+            </div>
+            <div id="messages-container" class="messages-container">
+                <div class="loading">Loading messages...</div>
+            </div>
+        </div>
+
+        <div id="events" class="tab-content">
+            <h2>User Events Stream</h2>
+            <div id="events-container" class="stream-container">
+                <div class="loading">Loading events...</div>
+            </div>
+        </div>
+
+        <div id="logs" class="tab-content">
+            <h2>Application Logs</h2>
+            <div id="logs-container" class="stream-container">
+                <div class="loading">Loading logs...</div>
+            </div>
+        </div>
+
+        <div id="metrics" class="tab-content">
+            <h2>System Metrics</h2>
+            <div id="metrics-container" class="stream-container">
+                <div class="loading">Loading metrics...</div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Kafka Streaming Platform Demo - Built for learning Kafka</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
+
