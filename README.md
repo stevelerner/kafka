@@ -17,98 +17,6 @@ open http://localhost:8080    # Opens web UI
 
 When you're done: `./cleanup.sh`
 
-## Overview
-
-This project demonstrates:
-- **Apache Kafka** message broker and streaming platform
-- **Multiple Topics** showcasing different messaging patterns
-- **Producer & Consumer** services in Python
-- **Real-time Web UI** for visualizing message flows
-- **Stream Processing** with consumer groups
-- **Kafka Architecture** with Zookeeper coordination
-- **Message Patterns** including pub/sub, work queues, and event sourcing
-
-## Architecture
-
-The platform consists of 7 containerized services:
-
-```
-┌─────────────────────────────────────────────────┐
-│           Web UI (Port 8080)                    │
-│     Real-time Kafka Message Visualization       │
-└────────────┬────────────────────────────────────┘
-             │
-┌────────────▼────────────────────────────────────┐
-│         Kafka Broker (Port 9092)                │
-│     Message Storage & Distribution              │
-└─────┬──────────────────────────────────┬────────┘
-      │                                   │
-┌─────▼──────┐                      ┌────▼──────────┐
-│ Zookeeper  │                      │   Schema      │
-│  (:2181)   │                      │  Registry     │
-│Coordination│                      │   (:8081)     │
-└────────────┘                      └───────────────┘
-      │                                   │
-┌─────▼───────────────────────────────────▼────────┐
-│              Producers                           │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
-│  │  Events  │  │   Logs   │  │ Metrics  │      │
-│  └──────────┘  └──────────┘  └──────────┘      │
-└──────────────────────────────────────────────────┘
-             │
-┌────────────▼────────────────────────────────────┐
-│              Consumers                           │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
-│  │Analytics │  │ Alerting │  │  Logger  │      │
-│  └──────────┘  └──────────┘  └──────────┘      │
-└──────────────────────────────────────────────────┘
-```
-
-### Components
-
-#### 1. Kafka Broker (Port 9092)
-- Message storage and replication
-- Topic management
-- Partition coordination
-- High-throughput message delivery
-
-#### 2. Zookeeper (Port 2181)
-- Cluster coordination
-- Leader election
-- Configuration management
-- Distributed synchronization
-
-#### 3. Schema Registry (Port 8081)
-- Schema versioning and compatibility
-- Avro schema management
-- Producer/consumer schema validation
-- Schema evolution support
-
-#### 4. Event Producer
-- Generates user events (clicks, purchases, signups)
-- Demonstrates event-driven patterns
-- Publishes to `user-events` topic
-- Configurable event rates
-
-#### 5. Log Producer
-- Simulates application logs
-- Multiple log levels (INFO, WARN, ERROR)
-- Publishes to `application-logs` topic
-- Realistic log patterns
-
-#### 6. Metrics Producer
-- System metrics (CPU, memory, disk)
-- Time-series data patterns
-- Publishes to `system-metrics` topic
-- Demonstrates high-volume streaming
-
-#### 7. Web UI (Port 8080)
-- Real-time message visualization
-- Topic browser and statistics
-- Consumer group monitoring
-- Message search and filtering
-- Interactive Kafka management
-
 ## Quick Start
 
 ### Prerequisites
@@ -242,6 +150,155 @@ docker-compose start
 ./cleanup.sh
 ./start.sh
 ```
+
+## How Kafka Works: Quick Overview
+
+This demo shows Kafka's core capabilities in action. Here's what's happening behind the scenes:
+
+### The Basics
+
+**Kafka** is a distributed streaming platform that stores and processes streams of records (messages) in real-time. Think of it as a high-performance message queue that can handle millions of messages per second.
+
+### Key Components in This Demo
+
+1. **Kafka Broker** - The server that stores messages and serves them to consumers
+2. **Zookeeper** - Manages Kafka cluster metadata and coordination
+3. **Topics** - Named channels where messages are published (like `user-events`, `system-metrics`)
+4. **Producers** - Applications that write messages to topics
+5. **Consumers** - Applications that read messages from topics
+6. **Partitions** - Topics are split into partitions for parallelism and scalability
+
+### How Data Flows
+
+```
+Producer --> Kafka Topic (Partitions) --> Consumer Group --> Processing
+```
+
+1. **Producers send messages** to topics (e.g., metrics-producer sends system stats)
+2. **Kafka stores messages** in topic partitions as an immutable, ordered log
+3. **Consumers read messages** from topics independently at their own pace
+4. **Messages are retained** for a configurable time (7 days in this demo) regardless of consumption
+
+### Why This Matters
+
+**Decoupling**: Producers and consumers don't know about each other. A producer can send messages even if no consumer is listening. A consumer can read messages that were sent hours ago.
+
+**Scalability**: Multiple consumers can read from the same topic simultaneously. Partitions enable parallel processing.
+
+**Reliability**: Messages are persisted to disk and replicated (in multi-broker setups). If a consumer crashes, it can resume from where it left off.
+
+**Real-time Processing**: Low latency (milliseconds) enables real-time analytics, monitoring, and event-driven architectures.
+
+### What You're Seeing in the Demo
+
+- **Event-Driven Architecture** (`user-events`): User actions (purchases, logins) trigger events
+- **Log Aggregation** (`application-logs`): Multiple services send logs to a central location
+- **Metrics Collection** (`system-metrics`): System monitoring data streams continuously
+- **Consumer Groups**: Multiple consumers process messages in parallel
+- **Offset Management**: Consumers track their position in each partition
+
+### The Power of Kafka
+
+In production, Kafka powers:
+- Real-time analytics dashboards
+- Microservices communication
+- Stream processing (fraud detection, recommendations)
+- Event sourcing and CQRS patterns
+- Data pipelines feeding data warehouses
+
+This demo runs everything locally in Docker, but the same patterns scale to process billions of messages per day in production environments.
+
+## Overview
+
+This project demonstrates:
+- **Apache Kafka** message broker and streaming platform
+- **Multiple Topics** showcasing different messaging patterns
+- **Producer & Consumer** services in Python
+- **Real-time Web UI** for visualizing message flows
+- **Stream Processing** with consumer groups
+- **Kafka Architecture** with Zookeeper coordination
+- **Message Patterns** including pub/sub, work queues, and event sourcing
+
+## Architecture
+
+The platform consists of 7 containerized services:
+
+```
+┌─────────────────────────────────────────────────┐
+│           Web UI (Port 8080)                    │
+│     Real-time Kafka Message Visualization       │
+└────────────┬────────────────────────────────────┘
+             │
+┌────────────▼────────────────────────────────────┐
+│         Kafka Broker (Port 9092)                │
+│     Message Storage & Distribution              │
+└─────┬──────────────────────────────────┬────────┘
+      │                                   │
+┌─────▼──────┐                      ┌────▼──────────┐
+│ Zookeeper  │                      │   Schema      │
+│  (:2181)   │                      │  Registry     │
+│Coordination│                      │   (:8081)     │
+└────────────┘                      └───────────────┘
+      │                                   │
+┌─────▼───────────────────────────────────▼────────┐
+│              Producers                           │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
+│  │  Events  │  │   Logs   │  │ Metrics  │      │
+│  └──────────┘  └──────────┘  └──────────┘      │
+└──────────────────────────────────────────────────┘
+             │
+┌────────────▼────────────────────────────────────┐
+│              Consumers                           │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
+│  │Analytics │  │ Alerting │  │  Logger  │      │
+│  └──────────┘  └──────────┘  └──────────┘      │
+└──────────────────────────────────────────────────┘
+```
+
+### Components
+
+#### 1. Kafka Broker (Port 9092)
+- Message storage and replication
+- Topic management
+- Partition coordination
+- High-throughput message delivery
+
+#### 2. Zookeeper (Port 2181)
+- Cluster coordination
+- Leader election
+- Configuration management
+- Distributed synchronization
+
+#### 3. Schema Registry (Port 8081)
+- Schema versioning and compatibility
+- Avro schema management
+- Producer/consumer schema validation
+- Schema evolution support
+
+#### 4. Event Producer
+- Generates user events (clicks, purchases, signups)
+- Demonstrates event-driven patterns
+- Publishes to `user-events` topic
+- Configurable event rates
+
+#### 5. Log Producer
+- Simulates application logs
+- Multiple log levels (INFO, WARN, ERROR)
+- Publishes to `application-logs` topic
+- Realistic log patterns
+
+#### 6. Metrics Producer
+- System metrics (CPU, memory, disk)
+- Time-series data patterns
+- Publishes to `system-metrics` topic
+- Demonstrates high-volume streaming
+
+#### 7. Web UI (Port 8080)
+- Real-time message visualization
+- Topic browser and statistics
+- Consumer group monitoring
+- Message search and filtering
+- Interactive Kafka management
 
 ## Kafka Concepts Demonstrated
 
@@ -958,39 +1015,6 @@ This demo showcases patterns for:
 7. **CDC** - Change Data Capture
 8. **IoT Data** - Sensor data ingestion
 
-## Learning Resources
-
-### Official Documentation
-- [Apache Kafka Documentation](https://kafka.apache.org/documentation/)
-- [Kafka Python Client](https://kafka-python.readthedocs.io/)
-- [Confluent Platform](https://docs.confluent.io/)
-
-### Books
-- "Kafka: The Definitive Guide" by Neha Narkhede
-- "Designing Data-Intensive Applications" by Martin Kleppmann
-- "Streaming Systems" by Tyler Akidau
-
-### Online Courses
-- Confluent Kafka Fundamentals
-- Udemy Kafka Courses
-- LinkedIn Learning Kafka Path
-
-## License
-
-This is a demonstration project for educational and technical learning purposes.
-
-## About
-
-This project serves as a technical reference implementation demonstrating:
-- Apache Kafka streaming platform
-- Message broker patterns
-- Producer/consumer architectures
-- Stream processing concepts
-- Real-time data pipelines
-- Microservices communication
-
----
-
 ## Getting Help
 
 ### Quick Reference
@@ -1023,72 +1047,5 @@ This project serves as a technical reference implementation demonstrating:
 
 ---
 
-## How Kafka Works: Quick Overview
-
-This demo shows Kafka's core capabilities in action. Here's what's happening behind the scenes:
-
-### The Basics
-
-**Kafka** is a distributed streaming platform that stores and processes streams of records (messages) in real-time. Think of it as a high-performance message queue that can handle millions of messages per second.
-
-### Key Components in This Demo
-
-1. **Kafka Broker** - The server that stores messages and serves them to consumers
-2. **Zookeeper** - Manages Kafka cluster metadata and coordination
-3. **Topics** - Named channels where messages are published (like `user-events`, `system-metrics`)
-4. **Producers** - Applications that write messages to topics
-5. **Consumers** - Applications that read messages from topics
-6. **Partitions** - Topics are split into partitions for parallelism and scalability
-
-### How Data Flows
-
-```
-Producer --> Kafka Topic (Partitions) --> Consumer Group --> Processing
-```
-
-1. **Producers send messages** to topics (e.g., metrics-producer sends system stats)
-2. **Kafka stores messages** in topic partitions as an immutable, ordered log
-3. **Consumers read messages** from topics independently at their own pace
-4. **Messages are retained** for a configurable time (7 days in this demo) regardless of consumption
-
-### Why This Matters
-
-**Decoupling**: Producers and consumers don't know about each other. A producer can send messages even if no consumer is listening. A consumer can read messages that were sent hours ago.
-
-**Scalability**: Multiple consumers can read from the same topic simultaneously. Partitions enable parallel processing.
-
-**Reliability**: Messages are persisted to disk and replicated (in multi-broker setups). If a consumer crashes, it can resume from where it left off.
-
-**Real-time Processing**: Low latency (milliseconds) enables real-time analytics, monitoring, and event-driven architectures.
-
-### What You're Seeing in the Demo
-
-- **Event-Driven Architecture** (`user-events`): User actions (purchases, logins) trigger events
-- **Log Aggregation** (`application-logs`): Multiple services send logs to a central location
-- **Metrics Collection** (`system-metrics`): System monitoring data streams continuously
-- **Consumer Groups**: Multiple consumers process messages in parallel
-- **Offset Management**: Consumers track their position in each partition
-
-### The Power of Kafka
-
-In production, Kafka powers:
-- Real-time analytics dashboards
-- Microservices communication
-- Stream processing (fraud detection, recommendations)
-- Event sourcing and CQRS patterns
-- Data pipelines feeding data warehouses
-
-This demo runs everything locally in Docker, but the same patterns scale to process billions of messages per day in production environments.
-
----
-
 **Note**: This demo uses a single Kafka broker for simplicity and ease of running on Docker Desktop for Mac. Production deployments should use multiple brokers (3+) for high availability and fault tolerance.
-
-**Ready to explore Kafka?**
-
-```bash
-cd /Volumes/external/code/kafka
-./start.sh
-open http://localhost:8080
-```
 
