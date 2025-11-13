@@ -34,7 +34,7 @@ def create_producer():
         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
         key_serializer=lambda k: k.encode('utf-8') if k else None,
         acks=1,
-        compression_type='snappy',  # Good for metrics
+        compression_type='gzip',  # Good compression without extra libraries
         linger_ms=5,
         batch_size=32768
     )

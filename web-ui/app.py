@@ -68,17 +68,21 @@ def consume_messages():
     
     topics = ['user-events', 'application-logs', 'system-metrics']
     
+    # Wait for Kafka to be ready
+    time.sleep(3)
+    
     consumer = KafkaConsumer(
         *topics,
         bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS.split(','),
         group_id='web-ui-consumer',
         value_deserializer=lambda m: json.loads(m.decode('utf-8')),
-        auto_offset_reset='latest',  # Start from latest to avoid backlog
+        auto_offset_reset='earliest',  # Start from beginning to catch existing messages
         enable_auto_commit=True,
         consumer_timeout_ms=1000
     )
     
     print(f"Consumer started for topics: {topics}")
+    print(f"Consuming messages... (offset_reset=earliest)")
     
     while True:
         try:
@@ -100,6 +104,10 @@ def consume_messages():
                     message_counts[topic] += 1
                     stats['total_messages'] += 1
                     stats['last_update'] = datetime.now().isoformat()
+                    
+                    # Debug logging
+                    if message_counts[topic] % 20 == 0:
+                        print(f"Web UI consumed {message_counts[topic]} messages from {topic}")
                     
         except Exception as e:
             print(f"Consumer error: {e}")

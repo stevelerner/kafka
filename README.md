@@ -1023,6 +1023,65 @@ This project serves as a technical reference implementation demonstrating:
 
 ---
 
+## How Kafka Works: Quick Overview
+
+This demo shows Kafka's core capabilities in action. Here's what's happening behind the scenes:
+
+### The Basics
+
+**Kafka** is a distributed streaming platform that stores and processes streams of records (messages) in real-time. Think of it as a high-performance message queue that can handle millions of messages per second.
+
+### Key Components in This Demo
+
+1. **Kafka Broker** - The server that stores messages and serves them to consumers
+2. **Zookeeper** - Manages Kafka cluster metadata and coordination
+3. **Topics** - Named channels where messages are published (like `user-events`, `system-metrics`)
+4. **Producers** - Applications that write messages to topics
+5. **Consumers** - Applications that read messages from topics
+6. **Partitions** - Topics are split into partitions for parallelism and scalability
+
+### How Data Flows
+
+```
+Producer --> Kafka Topic (Partitions) --> Consumer Group --> Processing
+```
+
+1. **Producers send messages** to topics (e.g., metrics-producer sends system stats)
+2. **Kafka stores messages** in topic partitions as an immutable, ordered log
+3. **Consumers read messages** from topics independently at their own pace
+4. **Messages are retained** for a configurable time (7 days in this demo) regardless of consumption
+
+### Why This Matters
+
+**Decoupling**: Producers and consumers don't know about each other. A producer can send messages even if no consumer is listening. A consumer can read messages that were sent hours ago.
+
+**Scalability**: Multiple consumers can read from the same topic simultaneously. Partitions enable parallel processing.
+
+**Reliability**: Messages are persisted to disk and replicated (in multi-broker setups). If a consumer crashes, it can resume from where it left off.
+
+**Real-time Processing**: Low latency (milliseconds) enables real-time analytics, monitoring, and event-driven architectures.
+
+### What You're Seeing in the Demo
+
+- **Event-Driven Architecture** (`user-events`): User actions (purchases, logins) trigger events
+- **Log Aggregation** (`application-logs`): Multiple services send logs to a central location
+- **Metrics Collection** (`system-metrics`): System monitoring data streams continuously
+- **Consumer Groups**: Multiple consumers process messages in parallel
+- **Offset Management**: Consumers track their position in each partition
+
+### The Power of Kafka
+
+In production, Kafka powers:
+- Real-time analytics dashboards
+- Microservices communication
+- Stream processing (fraud detection, recommendations)
+- Event sourcing and CQRS patterns
+- Data pipelines feeding data warehouses
+
+This demo runs everything locally in Docker, but the same patterns scale to process billions of messages per day in production environments.
+
+---
+
 **Note**: This demo uses a single Kafka broker for simplicity and ease of running on Docker Desktop for Mac. Production deployments should use multiple brokers (3+) for high availability and fault tolerance.
 
 **Ready to explore Kafka?**
