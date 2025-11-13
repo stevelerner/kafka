@@ -791,6 +791,36 @@ docker-compose exec kafka kafka-consumer-groups \
   --bootstrap-server localhost:9092
 ```
 
+### Metrics not appearing
+
+If system metrics don't appear in the Web UI:
+
+```bash
+# Check if metrics producer is running
+docker-compose ps | grep metrics-producer
+
+# Check metrics producer logs
+docker-compose logs metrics-producer
+
+# Check if topic exists
+docker-compose exec kafka kafka-topics \
+  --describe \
+  --topic system-metrics \
+  --bootstrap-server localhost:9092
+
+# Restart metrics producer
+docker-compose restart metrics-producer
+
+# Check for messages
+docker-compose exec kafka kafka-console-consumer \
+  --topic system-metrics \
+  --from-beginning \
+  --max-messages 5 \
+  --bootstrap-server localhost:9092
+```
+
+**Note**: The metrics producer waits 5 seconds at startup and has retry logic. First metrics appear after ~8 seconds.
+
 ### Messages not appearing
 
 ```bash
@@ -980,6 +1010,8 @@ This project serves as a technical reference implementation demonstrating:
 3. **Build errors**: Run `./cleanup.sh` to remove cached images
 4. **Slow startup**: First build takes 2-3 minutes, be patient
 5. **Permission denied**: Run `chmod +x *.sh`
+6. **Metrics not showing**: Wait 10-15 seconds after startup, check logs: `docker-compose logs metrics-producer`
+7. **Empty topics**: Producers start after Kafka is healthy (10-15 seconds after startup)
 
 ### Documentation
 

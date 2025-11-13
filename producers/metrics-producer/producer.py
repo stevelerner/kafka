@@ -112,7 +112,26 @@ def main():
     print(f"Topic: {KAFKA_TOPIC}")
     print(f"Interval: {PRODUCER_INTERVAL}s")
     
-    producer = create_producer()
+    # Wait a bit for Kafka to be ready
+    print("Waiting for Kafka to be ready...")
+    time.sleep(5)
+    
+    # Retry connection
+    max_retries = 10
+    for attempt in range(max_retries):
+        try:
+            print(f"Connecting to Kafka (attempt {attempt + 1}/{max_retries})...")
+            producer = create_producer()
+            print("Successfully connected to Kafka!")
+            break
+        except Exception as e:
+            print(f"Connection attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(5)
+            else:
+                print("Failed to connect to Kafka after max retries")
+                return
+    
     metric_count = 0
     
     # Track base values for each host to simulate realistic trends
@@ -127,9 +146,9 @@ def main():
             # Generate metrics for all hosts
             for host in HOSTS:
                 # Randomly drift base values for realism
-                for metric in ['cpu', 'memory', 'disk']:
-                    host_states[host][metric] += random.uniform(-2, 2)
-                    host_states[host][metric] = max(10, min(95, host_states[host][metric]))
+                for metric_type in ['cpu', 'memory', 'disk']:
+                    host_states[host][metric_type] += random.uniform(-2, 2)
+                    host_states[host][metric_type] = max(10, min(95, host_states[host][metric_type]))
                 
                 # Generate each metric type
                 metrics = [
@@ -141,12 +160,17 @@ def main():
                 
                 # Send all metrics for this host
                 for metric in metrics:
-                    future = producer.send(
-                        KAFKA_TOPIC,
-                        key=host,
-                        value=metric
-                    )
-                    metric_count += 1
+                    try:
+                        future = producer.send(
+                            KAFKA_TOPIC,
+                            key=host,
+                            value=metric
+                        )
+                        # Wait for confirmation
+                        future.get(timeout=10)
+                        metric_count += 1
+                    except Exception as e:
+                        print(f"Error sending metric: {e}")
             
             # Flush and report
             producer.flush()
@@ -158,7 +182,9 @@ def main():
     except KeyboardInterrupt:
         print("\nShutting down producer...")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error in main loop: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
         producer.close()
         print(f"Producer stopped. Total metrics sent: {metric_count}")
